@@ -1,9 +1,19 @@
-import { api } from './api'; // Pastikan import dengan { api }
+import { api } from './api';
 
 export const getAllKategori = async () => {
   try {
+    console.log("Calling kategori API");
     const response = await api('/kategori', { method: 'GET' });
-    return { data: response };
+    console.log("Kategori API raw response:", response);
+    
+    // Handle berbagai kemungkinan format respons
+    if (response.data) {
+      return { data: response.data }; 
+    } else if (Array.isArray(response)) {
+      return { data: response };
+    } else {
+      return { data: response };
+    }
   } catch (error) {
     console.error('Error fetching kategori:', error);
     throw error;
