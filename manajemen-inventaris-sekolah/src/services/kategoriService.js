@@ -1,11 +1,11 @@
-import { api } from './api';
+import { api } from './api'; // Pastikan import dengan { api }
 
-// Mendapatkan semua kategori
 export const getAllKategori = async () => {
   try {
-    const response = await api('/kategori');
-    return response.data;
+    const response = await api('/kategori', { method: 'GET' });
+    return { data: response };
   } catch (error) {
+    console.error('Error fetching kategori:', error);
     throw error;
   }
 };
@@ -13,9 +13,10 @@ export const getAllKategori = async () => {
 // Mendapatkan kategori berdasarkan ID
 export const getKategoriById = async (id) => {
   try {
-    const response = await api(`/kategori/${id}`);
-    return response.data;
+    const response = await api(`/kategori/${id}`, { method: 'GET' });
+    return { data: response };
   } catch (error) {
+    console.error(`Error fetching kategori with id ${id}:`, error);
     throw error;
   }
 };

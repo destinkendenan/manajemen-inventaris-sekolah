@@ -1,89 +1,40 @@
-import { api } from './api';
+import { api } from './api'; // Pastikan import dengan { api }
 
-// Mendapatkan semua barang
 export const getAllBarang = async (params = {}) => {
   try {
-    const response = await api.get('/api/barang', { params });
-    return {
-      data: response.data.data || [],
-      pagination: response.data.pagination || {
-        totalPages: 1,
-        totalItems: 0,
-        currentPage: 1
-      }
-    };
+    // Gunakan api sebagai fungsi dengan opsi yang benar
+    const response = await api('/barang', { 
+      method: 'GET',
+      params: params
+    });
+    return { data: response };
   } catch (error) {
     console.error('Error fetching barang:', error);
     throw error;
   }
 };
 
-// Mendapatkan barang berdasarkan ID
 export const getBarangById = async (id) => {
   try {
-    const response = await api(`/barang/${id}`);
-    return response.data;
+    const response = await api(`/barang/${id}`, { method: 'GET' });
+    return { data: response };
   } catch (error) {
+    console.error(`Error fetching barang with id ${id}:`, error);
     throw error;
   }
 };
 
-// Menambahkan barang baru
-export const createBarang = async (barangData) => {
+export const createBarang = async (data) => {
   try {
     const response = await api('/barang', {
       method: 'POST',
-      data: barangData
+      data: data
     });
-    return response.data;
+    return { data: response };
   } catch (error) {
+    console.error('Error creating barang:', error);
     throw error;
   }
 };
 
-// Mengupdate barang yang sudah ada
-export const updateBarang = async (id, barangData) => {
-  try {
-    const response = await api(`/barang/${id}`, {
-      method: 'PUT',
-      data: barangData
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Menghapus barang
-export const deleteBarang = async (id) => {
-  try {
-    const response = await api(`/barang/${id}`, {
-      method: 'DELETE'
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Mencari barang berdasarkan kata kunci
-export const searchBarang = async (keyword) => {
-  try {
-    const response = await api('/barang/search', {
-      params: { keyword }
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Mendapatkan barang berdasarkan kategori
-export const getBarangByKategori = async (kategoriId) => {
-  try {
-    const response = await api(`/barang/kategori/${kategoriId}`);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
+// Tambahkan fungsi update dan delete jika diperlukan
