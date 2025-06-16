@@ -447,12 +447,6 @@ const Barang = () => {
                       <td>
                         <div className="flex space-x-1">
                           <button 
-                            className="btn btn-xs btn-info"
-                            onClick={() => openEditModal(item)}
-                          >
-                            Detail
-                          </button>
-                          <button 
                             className="btn btn-xs btn-warning"
                             onClick={() => openEditModal(item)}
                           >
