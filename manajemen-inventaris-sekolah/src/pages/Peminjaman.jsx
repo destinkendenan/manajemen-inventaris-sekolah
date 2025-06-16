@@ -203,12 +203,11 @@ const Peminjaman = () => {
           </div>
         </div>
 
-        <button
-          className="btn btn-primary w-full md:w-auto"
-          onClick={openPeminjamanModal}
-        >
-          Ajukan Peminjaman
-        </button>
+        {!isAdmin && (  // Hanya tampilkan jika bukan admin
+          <button className="btn btn-primary" onClick={openPeminjamanModal}>
+            Ajukan Peminjaman
+          </button>
+        )}
       </div>
 
       {isLoading ? (
