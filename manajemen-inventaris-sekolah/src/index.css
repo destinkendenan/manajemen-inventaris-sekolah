@@ -1,3 +1,10 @@
+/* Di src/index.css, hapus atau komentari baris berikut jika ada */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+/* CSS kustom Anda di bawah ini */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -65,4 +72,62 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* CSS kustom untuk aplikasi */
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Override DaisyUI styles */
+.container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Animasi loading */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Styling untuk tabel */
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+/* Styling untuk form */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Styling untuk modal */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
 }
