@@ -417,12 +417,11 @@ const Barang = () => {
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Kode</th>
-                    <th>Nama</th>
+                    <th>Nama Barang</th>
                     <th>Kategori</th>
-                    <th>Jumlah</th>
-                    <th>Lokasi</th>
-                    <th>Kondisi</th>
+                    <th>Jumlah Barang</th>
+                    <th>Tersedia</th>
+                    <th>Tahun Pengadaan</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -430,20 +429,11 @@ const Barang = () => {
                   {barang.map((item, index) => (
                     <tr key={item.id}>
                       <td>{index + 1}</td>
-                      <td>{item.kode || "-"}</td>
                       <td>{item.nama || "-"}</td>
                       <td>{item.kategori?.nama || "-"}</td>
-                      <td>{item.jumlah || 0} / {item.jumlah_tersedia || 0}</td>
-                      <td>{item.lokasi || "-"}</td>
-                      <td>
-                        <span className={`badge ${
-                          item.kondisi === 'baik' ? 'badge-success' : 
-                          item.kondisi === 'rusak_ringan' ? 'badge-warning' : 'badge-error'
-                        }`}>
-                          {item.kondisi === 'baik' ? 'Baik' : 
-                           item.kondisi === 'rusak_ringan' ? 'Rusak Ringan' : 'Rusak Berat'}
-                        </span>
-                      </td>
+                      <td>{item.jumlah || 0}</td>
+                      <td>{item.jumlah_tersedia || 0}</td>
+                      <td>{item.tahun_pengadaan || "-"}</td>
                       <td>
                         <div className="flex space-x-1">
                           <button 
