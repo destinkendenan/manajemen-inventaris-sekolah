@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllBarang, createBarang } from '../services/barangService';
+import { getAllBarang, createBarang, updateBarang, deleteBarang } from '../services/barangService';
 import { getAllKategori } from '../services/kategoriService';
 
 const Barang = () => {
@@ -35,6 +35,20 @@ const Barang = () => {
 
   // State untuk loading saat submit
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Tambahkan state baru
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedBarang, setSelectedBarang] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // State untuk notifikasi
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+    type: 'success' // success, error, warning, info
+  });
   
   useEffect(() => {
     console.log("Barang component mounted");
@@ -205,54 +219,126 @@ const Barang = () => {
     setIsSubmitting(true);
     
     try {
-      console.log("Form data yang akan dikirim:", formData);
-      // Panggil API untuk membuat barang baru
-      const result = await createBarang(formData);
-      console.log("Barang berhasil ditambahkan:", result);
+      if (isEditMode && selectedBarang) {
+        // Mode edit: Update barang yang ada
+        await updateBarang(selectedBarang.id, formData);
+        // Ganti alert dengan notifikasi
+        showNotification("Barang berhasil diperbarui");
+      } else {
+        // Mode tambah: Buat barang baru
+        await createBarang(formData);
+        // Ganti alert dengan notifikasi
+        showNotification("Barang berhasil ditambahkan");
+      }
       
       // Tutup modal
       setShowModal(false);
+      setIsEditMode(false);
+      setSelectedBarang(null);
       
-      // Refresh data untuk menampilkan barang baru
+      // Refresh data
       fetchData(searchTerm);
-      
-      // Tampilkan notifikasi sukses
-      alert("Barang berhasil ditambahkan!");
     } catch (err) {
-      console.error("Error creating barang:", err);
+      console.error("Error saving barang:", err);
       
-      // Tampilkan pesan error yang lebih user-friendly
-      let errorMessage = "Gagal menambahkan barang";
+      let errorMessage = isEditMode ? "Gagal memperbarui barang" : "Gagal menambahkan barang";
       if (err.response?.data?.message) {
         errorMessage += ": " + err.response.data.message;
       } else if (err.message) {
         errorMessage += ": " + err.message;
       }
       
-      alert(errorMessage);
+      // Ganti alert dengan notifikasi error
+      showNotification(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Fungsi untuk membatalkan dan menutup modal
-  const handleCancel = () => {
-    // Tutup modal tanpa melakukan apa-apa
-    setShowModal(false);
+  // Fungsi untuk membuka modal edit
+  const openEditModal = (barang) => {
+    // Set barang yang dipilih
+    setSelectedBarang(barang);
+    setIsEditMode(true);
     
-    // Optional: Reset form data juga
+    // Set form data dengan data barang yang dipilih
     setFormData({
-      kode: '',
-      nama: '',
-      deskripsi: '',
-      kategori_id: '',
-      jumlah: 1,
-      jumlah_tersedia: 1,
-      kondisi: 'baik',
-      lokasi: '',
-      tahun_pengadaan: new Date().getFullYear()
+      kode: barang.kode || '',
+      nama: barang.nama || '',
+      deskripsi: barang.deskripsi || '',
+      kategori_id: barang.kategori_id || barang.kategori?.id || '',
+      jumlah: barang.jumlah || 1,
+      jumlah_tersedia: barang.jumlah_tersedia || 1,
+      kondisi: barang.kondisi || 'baik',
+      lokasi: barang.lokasi || '',
+      tahun_pengadaan: barang.tahun_pengadaan || new Date().getFullYear()
     });
+    
+    // Reset errors
     setFormErrors({});
+    
+    // Buka modal
+    setShowModal(true);
+    
+    // Pastikan kategori sudah diambil
+    if (kategori.length === 0) {
+      fetchKategori();
+    }
+  };
+  
+  // Fungsi untuk konfirmasi delete
+  const openDeleteConfirm = (id) => {
+    setDeletingId(id);
+    setShowDeleteConfirm(true);
+  };
+  
+  // Fungsi untuk menghapus barang
+  const handleDelete = async () => {
+    if (!deletingId) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      await deleteBarang(deletingId);
+      
+      // Refresh data
+      fetchData(searchTerm);
+      
+      // Tutup konfirmasi
+      setShowDeleteConfirm(false);
+      setDeletingId(null);
+      
+      // Ganti alert dengan notifikasi
+      showNotification("Barang berhasil dihapus");
+    } catch (err) {
+      console.error("Error deleting barang:", err);
+      
+      let errorMessage = "Gagal menghapus barang";
+      if (err.response?.data?.message) {
+        errorMessage += ": " + err.response.data.message;
+      } else if (err.message) {
+        errorMessage += ": " + err.message;
+      }
+      
+      // Ganti alert dengan notifikasi error
+      showNotification(errorMessage, 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  
+  // Helper function untuk menampilkan notifikasi
+  const showNotification = (message, type = 'success') => {
+    setNotification({
+      show: true,
+      message,
+      type
+    });
+    
+    // Auto hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(prev => ({...prev, show: false}));
+    }, 3000);
   };
   
   // Render UI
@@ -360,9 +446,24 @@ const Barang = () => {
                       </td>
                       <td>
                         <div className="flex space-x-1">
-                          <button className="btn btn-xs btn-info">Detail</button>
-                          <button className="btn btn-xs btn-warning">Edit</button>
-                          <button className="btn btn-xs btn-error">Hapus</button>
+                          <button 
+                            className="btn btn-xs btn-info"
+                            onClick={() => openEditModal(item)}
+                          >
+                            Detail
+                          </button>
+                          <button 
+                            className="btn btn-xs btn-warning"
+                            onClick={() => openEditModal(item)}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn btn-xs btn-error"
+                            onClick={() => openDeleteConfirm(item.id)}
+                          >
+                            Hapus
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -383,16 +484,22 @@ const Barang = () => {
         </>
       )}
       
-      {/* Modal Tambah Barang dengan desain yang lebih baik */}
+      {/* Modal Tambah/Edit Barang dengan desain yang lebih baik */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto py-10 bg-black bg-opacity-60">
           <div className="relative bg-base-200 rounded-lg shadow-xl w-full max-w-2xl mx-4 border border-base-300">
             {/* Header Modal */}
             <div className="flex justify-between items-center p-4 border-b border-base-300 bg-base-300 rounded-t-lg">
-              <h2 className="text-xl font-bold text-base-content">Tambah Barang Baru</h2>
+              <h2 className="text-xl font-bold text-base-content">
+                {isEditMode ? 'Edit Barang' : 'Tambah Barang Baru'}
+              </h2>
               <button 
                 className="btn btn-sm btn-circle btn-ghost" 
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setIsEditMode(false);
+                  setSelectedBarang(null);
+                }}
               >
                 ✕
               </button>
@@ -607,7 +714,7 @@ const Barang = () => {
                   <button 
                     type="button" 
                     className="btn btn-sm btn-outline mr-2" 
-                    onClick={handleCancel}
+                    onClick={() => setShowModal(false)}
                   >
                     Batal
                   </button>
@@ -635,6 +742,59 @@ const Barang = () => {
                   <button className="btn btn-xs mt-2" onClick={fetchKategori}>Reload Kategori</button>
                 </details>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Konfirmasi Hapus */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-base-100 p-6 rounded-lg shadow-xl max-w-md mx-4 border border-base-300">
+            <h3 className="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+            <p className="mb-6">Apakah Anda yakin ingin menghapus barang ini? Tindakan ini tidak dapat dibatalkan.</p>
+            
+            <div className="flex justify-end gap-2">
+              <button 
+                className="btn btn-sm btn-ghost" 
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeletingId(null);
+                }}
+                disabled={isDeleting}
+              >
+                Batal
+              </button>
+              <button 
+                className="btn btn-sm btn-error" 
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  'Hapus'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Notifikasi */}
+      {notification.show && (
+        <div className={`fixed top-4 right-4 z-50 toast toast-${notification.type}`}>
+          <div className="alert alert-${notification.type} shadow-lg">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{notification.message}</span>
+            </div>
+            <div className="flex-none">
+              <button className="btn btn-sm btn-ghost" onClick={() => setNotification({ ...notification, show: false })}>
+                ✕
+              </button>
             </div>
           </div>
         </div>

@@ -71,4 +71,42 @@ export const createBarang = async (data) => {
   }
 };
 
-// Tambahkan fungsi update dan delete jika diperlukan
+export const updateBarang = async (id, data) => {
+  try {
+    console.log(`Updating barang id ${id} with data:`, data);
+    
+    // Pastikan data numerik dikonversi dengan benar
+    const payload = {
+      ...data,
+      kategori_id: parseInt(data.kategori_id),
+      jumlah: parseInt(data.jumlah),
+      jumlah_tersedia: parseInt(data.jumlah_tersedia),
+      tahun_pengadaan: parseInt(data.tahun_pengadaan)
+    };
+    
+    const response = await api(`/barang/${id}`, {
+      method: 'PUT',
+      data: payload
+    });
+    
+    return { data: response };
+  } catch (error) {
+    console.error(`Error updating barang id ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteBarang = async (id) => {
+  try {
+    console.log(`Deleting barang id ${id}`);
+    
+    const response = await api(`/barang/${id}`, {
+      method: 'DELETE'
+    });
+    
+    return { data: response };
+  } catch (error) {
+    console.error(`Error deleting barang id ${id}:`, error);
+    throw error;
+  }
+};
